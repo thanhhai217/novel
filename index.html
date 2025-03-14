@@ -45,19 +45,27 @@
         let response = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
         let data = await response.json();
 
-        console.log("📌 Dữ liệu API:", data); // Debug kiểm tra dữ liệu API
+        console.log("📌 Dữ liệu API:", data); // Kiểm tra dữ liệu nhận được
 
         if (!Array.isArray(data.data)) {
             throw new Error("Dữ liệu không đúng định dạng!");
         }
 
         let select = document.getElementById("chapterSelect");
-        select.innerHTML = "";
+        select.innerHTML = ""; // Xóa danh sách cũ
 
-        data.data.forEach(chapter => {
+        data.data.forEach(item => {
+            let chapter = item.json; // Lấy dữ liệu đúng từ `json`
+
+            if (!chapter || !chapter.chapter_no || !chapter.url_story) {
+                console.warn("⚠️ Bỏ qua chương có dữ liệu không hợp lệ:", chapter);
+                return; // Bỏ qua nếu thiếu dữ liệu
+            }
+
+            let storyName = chapter.url_story.split('/').pop(); // Lấy tên truyện từ URL
             let option = document.createElement("option");
-            option.value = chapter.url_chapter; // Gán URL chương vào value
-            option.textContent = `Chương ${chapter.chapter_no} - Truyện ${chapter.url_story.split('/').pop()}`;
+            option.value = chapter.url_chapter; // Lưu URL chương để mở sau này
+            option.textContent = `Chương ${chapter.chapter_no} - Truyện ${storyName}`;
             select.appendChild(option);
         });
 
@@ -67,6 +75,7 @@
         alert("⚠️ Không thể lấy danh sách chương!");
     }
 }
+
 
     </script>
 </body>
