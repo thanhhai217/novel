@@ -22,6 +22,7 @@
             padding: 15px;
             border: 1px solid #ddd;
             background-color: #f9f9f9;
+            white-space: pre-line; /* Giữ định dạng xuống dòng */
         }
     </style>
 </head>
@@ -37,46 +38,62 @@
 
     <button onclick="fetchChapter()">📚 Xem Truyện</button>
 
-    <div id="content"></div>
+    <div id="content">🔹 Nội dung chương sẽ hiển thị ở đây...</div>
 
     <script>
         async function fetchChapters() {
-    try {
-        let response = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
-        let data = await response.json();
+            try {
+                let response = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
+                let data = await response.json();
 
-        console.log("📌 Dữ liệu API:", data); // Kiểm tra dữ liệu nhận được
+                console.log("📌 Dữ liệu API:", data); // Debugging
 
-        if (!Array.isArray(data.data)) {
-            throw new Error("Dữ liệu không đúng định dạng!");
+                if (!Array.isArray(data.data)) {
+                    throw new Error("Dữ liệu không đúng định dạng!");
+                }
+
+                let select = document.getElementById("chapterSelect");
+                select.innerHTML = ""; // Xóa danh sách cũ
+
+                data.data.forEach(item => {
+                    let chapter = item.json; // Lấy dữ liệu đúng từ `json`
+
+                    if (!chapter || !chapter.chapter_no) {
+                        console.warn("⚠️ Bỏ qua chương có dữ liệu không hợp lệ:", chapter);
+                        return;
+                    }
+
+                    let storyName = "Không rõ"; // Nếu `url_story` không tồn tại
+                    if (chapter.url_story) {
+                        storyName = chapter.url_story.split('/').pop();
+                    }
+
+                    let option = document.createElement("option");
+                    option.value = chapter.chapter_no; // Chỉ lưu số chương
+                    option.setAttribute("data-content", chapter.content); // Lưu nội dung chương
+                    option.textContent = `Chương ${chapter.chapter_no} - Truyện ${storyName}`;
+                    select.appendChild(option);
+                });
+
+                alert("🎉 Danh sách truyện đã cập nhật!");
+            } catch (error) {
+                console.error("❌ Lỗi API:", error);
+                alert("⚠️ Không thể lấy danh sách chương!");
+            }
         }
 
-        let select = document.getElementById("chapterSelect");
-        select.innerHTML = ""; // Xóa danh sách cũ
+        function fetchChapter() {
+            let select = document.getElementById("chapterSelect");
+            let selectedOption = select.options[select.selectedIndex];
 
-        data.data.forEach(item => {
-            let chapter = item.json; // Lấy dữ liệu đúng từ `json`
-
-            if (!chapter || !chapter.chapter_no || !chapter.url_story) {
-                console.warn("⚠️ Bỏ qua chương có dữ liệu không hợp lệ:", chapter);
-                return; // Bỏ qua nếu thiếu dữ liệu
+            if (!selectedOption.value) {
+                alert("⚠️ Vui lòng chọn chương!");
+                return;
             }
 
-            let storyName = chapter.url_story.split('/').pop(); // Lấy tên truyện từ URL
-            let option = document.createElement("option");
-            option.value = chapter.url_chapter; // Lưu URL chương để mở sau này
-            option.textContent = `Chương ${chapter.chapter_no} - Truyện ${storyName}`;
-            select.appendChild(option);
-        });
-
-        alert("🎉 Danh sách truyện đã cập nhật!");
-    } catch (error) {
-        console.error("❌ Lỗi API:", error);
-        alert("⚠️ Không thể lấy danh sách chương!");
-    }
-}
-
-
+            let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
+            document.getElementById("content").innerHTML = `<h3>${selectedOption.textContent}</h3><p>${content}</p>`;
+        }
     </script>
 </body>
 </html>
