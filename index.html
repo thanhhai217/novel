@@ -58,7 +58,7 @@
                 data.data.forEach(item => {
                     let chapter = item.json; // Lấy dữ liệu đúng từ `json`
 
-                    if (!chapter || !chapter.chapter_no) {
+                    if (!chapter || !chapter.chapter_no || !chapter.title) {
                         console.warn("⚠️ Bỏ qua chương có dữ liệu không hợp lệ:", chapter);
                         return;
                     }
@@ -71,7 +71,8 @@
                     let option = document.createElement("option");
                     option.value = chapter.chapter_no; // Chỉ lưu số chương
                     option.setAttribute("data-content", chapter.content); // Lưu nội dung chương
-                    option.textContent = `Chương ${chapter.chapter_no} - Truyện ${storyName}`;
+                    option.setAttribute("data-title", chapter.title); // Lưu tiêu đề chương
+                    option.textContent = `${chapter.title} - ${storyName}`;
                     select.appendChild(option);
                 });
 
@@ -91,8 +92,11 @@
                 return;
             }
 
+            let title = selectedOption.getAttribute("data-title") || "Chưa có tiêu đề";
             let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
-            document.getElementById("content").innerHTML = `<h3>${selectedOption.textContent}</h3><p>${content}</p>`;
+            let formattedContent = content.replace(/\n/g, "<br><br>"); // Tách đoạn văn
+
+            document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${formattedContent}</p>`;
         }
     </script>
 </body>
