@@ -40,54 +40,34 @@
     <div id="content"></div>
 
     <script>
-        const n8nBaseUrl = "https://n8n.thanhhai217.com/webhook";
-
-        // Hàm lấy danh sách chương từ n8n
         async function fetchChapters() {
-            try {
-                let response = await fetch(`${n8nBaseUrl}/get-chapter-list`);
-                let data = await response.json();
-                
-                let select = document.getElementById("chapterSelect");
-                select.innerHTML = "";
+    try {
+        let response = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
+        let data = await response.json();
 
-                if (data.data.length === 0) {
-                    select.innerHTML = '<option value="">Không có chương nào</option>';
-                    return;
-                }
+        console.log("📌 Dữ liệu API:", data); // Debug kiểm tra dữ liệu API
 
-                data.data.forEach(chapter => {
-                    let option = document.createElement("option");
-                    option.value = chapter.chapter_no;
-                    option.textContent = `Chương ${chapter.chapter_no}: ${chapter.title}`;
-                    select.appendChild(option);
-                });
-
-                alert("🎉 Danh sách truyện đã cập nhật!");
-            } catch (error) {
-                console.error("Lỗi lấy danh sách chương:", error);
-                alert("❌ Không thể lấy danh sách truyện. Kiểm tra kết nối!");
-            }
+        if (!Array.isArray(data.data)) {
+            throw new Error("Dữ liệu không đúng định dạng!");
         }
 
-        // Hàm lấy nội dung chương đã chọn
-        async function fetchChapter() {
-            let chapterNo = document.getElementById("chapterSelect").value;
-            if (!chapterNo) return alert("⚠️ Vui lòng chọn một chương!");
+        let select = document.getElementById("chapterSelect");
+        select.innerHTML = "";
 
-            try {
-                let response = await fetch(`${n8nBaseUrl}/get-chapter?chapter_no=${chapterNo}`);
-                let data = await response.json();
-                
-                document.getElementById("content").innerHTML = `
-                    <h3>📖 ${data.data.title}</h3>
-                    <p>${data.data.content.replace(/\n/g, "<br>")}</p>
-                `;
-            } catch (error) {
-                console.error("Lỗi lấy nội dung chương:", error);
-                alert("❌ Không thể lấy nội dung chương!");
-            }
-        }
+        data.data.forEach(chapter => {
+            let option = document.createElement("option");
+            option.value = chapter.url_chapter; // Gán URL chương vào value
+            option.textContent = `Chương ${chapter.chapter_no} - Truyện ${chapter.url_story.split('/').pop()}`;
+            select.appendChild(option);
+        });
+
+        alert("🎉 Danh sách truyện đã cập nhật!");
+    } catch (error) {
+        console.error("❌ Lỗi API:", error);
+        alert("⚠️ Không thể lấy danh sách chương!");
+    }
+}
+
     </script>
 </body>
 </html>
