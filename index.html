@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đọc Truyện</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        #content {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h2>Đọc Truyện</h2>
+    
+    <button onclick="fetchChapters()">📖 Lấy Danh Sách Truyện</button>
+
+    <label for="chapterSelect">Chọn chương:</label>
+    <select id="chapterSelect">
+        <option value="">Chưa có danh sách...</option>
+    </select>
+
+    <button onclick="fetchChapter()">📚 Xem Truyện</button>
+
+    <div id="content"></div>
+
+    <script>
+        const n8nBaseUrl = "https://n8naws.thanhhai217.com/webhook";
+
+        // Hàm lấy danh sách chương từ n8n
+        async function fetchChapters() {
+            try {
+                let response = await fetch(`${n8nBaseUrl}/get-chapter-list`);
+                let data = await response.json();
+                
+                let select = document.getElementById("chapterSelect");
+                select.innerHTML = "";
+
+                if (data.data.length === 0) {
+                    select.innerHTML = '<option value="">Không có chương nào</option>';
+                    return;
+                }
+
+                data.data.forEach(chapter => {
+                    let option = document.createElement("option");
+                    option.value = chapter.chapter_no;
+                    option.textContent = `Chương ${chapter.chapter_no}: ${chapter.title}`;
+                    select.appendChild(option);
+                });
+
+                alert("🎉 Danh sách truyện đã cập nhật!");
+            } catch (error) {
+                console.error("Lỗi lấy danh sách chương:", error);
+                alert("❌ Không thể lấy danh sách truyện. Kiểm tra kết nối!");
+            }
+        }
+
+        // Hàm lấy nội dung chương đã chọn
+        async function fetchChapter() {
+            let chapterNo = document.getElementById("chapterSelect").value;
+            if (!chapterNo) return alert("⚠️ Vui lòng chọn một chương!");
+
+            try {
+                let response = await fetch(`${n8nBaseUrl}/get-chapter?chapter_no=${chapterNo}`);
+                let data = await response.json();
+                
+                document.getElementById("content").innerHTML = `
+                    <h3>📖 ${data.data.title}</h3>
+                    <p>${data.data.content.replace(/\n/g, "<br>")}</p>
+                `;
+            } catch (error) {
+                console.error("Lỗi lấy nội dung chương:", error);
+                alert("❌ Không thể lấy nội dung chương!");
+            }
+        }
+    </script>
+</body>
+</html>
