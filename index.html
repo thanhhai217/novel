@@ -48,12 +48,19 @@
         button:hover {
             background-color: #0056b3;
         }
+        #message {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: green;
+        }
     </style>
 </head>
 <body>
     <h2>📚 Chọn Chương</h2>
     <div class="container">
         <button onclick="fetchChapters()">🔄 Cập Nhật Danh Sách Chương</button>
+        <div id="message"></div>  <!-- ✅ THÔNG BÁO SẼ HIỂN THỊ Ở ĐÂY -->
         
         <div class="select-container">
             <label for="chapterSelect">📖 Chọn chương:</label>
@@ -119,10 +126,14 @@
                     });
                 });
 
-                alert("✅ Danh sách chương đã cập nhật, được nhóm theo truyện và sắp xếp!");
+                // ✅ CẬP NHẬT THÔNG BÁO NGAY DƯỚI BUTTON
+                document.getElementById("message").innerHTML = "✅ Danh sách chương đã cập nhật, được nhóm theo truyện và sắp xếp!";
+                document.getElementById("message").style.color = "green";
+
             } catch (error) {
                 console.error("❌ Lỗi API:", error);
-                alert("⚠️ Không thể lấy danh sách chương!");
+                document.getElementById("message").innerHTML = "⚠️ Không thể lấy danh sách chương!";
+                document.getElementById("message").style.color = "red";
             }
         }
 
