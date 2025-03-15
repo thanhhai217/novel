@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đọc Truyện</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Georgia', 'Times New Roman', serif;
+            font-family: 'Be Vietnam Pro', sans-serif;
             max-width: 700px;
             margin: 20px auto;
             padding: 20px;
-            background-color: #faf3e0; /* Nền màu kem dịu mắt */
+            background-color: #faf3e0; /* Nền kem dịu mắt */
             color: #333;
         }
         h2 {
@@ -24,12 +25,14 @@
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            font-family: 'Be Vietnam Pro', sans-serif;
         }
         button {
             background-color: #007bff;
             color: white;
             cursor: pointer;
             transition: 0.3s;
+            font-weight: 500;
         }
         button:hover {
             background-color: #0056b3;
@@ -75,7 +78,7 @@
                 let response = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
                 let data = await response.json();
 
-                console.log("📌 Dữ liệu API:", data); // Debugging
+                console.log("📌 Dữ liệu API:", data);
 
                 if (!Array.isArray(data.data)) {
                     throw new Error("Dữ liệu không đúng định dạng!");
@@ -85,8 +88,7 @@
                 select.innerHTML = ""; // Xóa danh sách cũ
 
                 data.data.forEach(item => {
-                    let chapter = item.json; // Lấy dữ liệu đúng từ `json`
-
+                    let chapter = item.json;
                     if (!chapter || !chapter.chapter_no || !chapter.title) {
                         console.warn("⚠️ Bỏ qua chương có dữ liệu không hợp lệ:", chapter);
                         return;
@@ -123,7 +125,7 @@
 
             let title = selectedOption.getAttribute("data-title") || "Chưa có tiêu đề";
             let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
-            let formattedContent = content.replace(/\n/g, "<br><br>"); // Tách đoạn văn
+            let formattedContent = content.replace(/\n/g, "<br><br>");
 
             document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${formattedContent}</p>`;
         }
