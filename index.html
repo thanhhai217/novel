@@ -136,12 +136,13 @@
     // ✅ Xóa tiêu đề bị trùng ("# Chương X: ...")
     content = content.replace(/^# Chương \d+: .*\n\n/, "");
 
-    // ✅ Chuyển ký tự xuống dòng `\n` thành `<br>` để hiển thị đúng
-    let formattedContent = content.replace(/\n/g, "<br><br>");
+    // ✅ Chuyển `\n` thành `<br>` nhưng chỉ dùng 1 thẻ xuống dòng
+    let formattedContent = content.replace(/\n/g, "<br>");
 
     // ✅ Hiển thị nội dung đã được format
     document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${formattedContent}</p>`;
 }
+
 
     </script>
 </body>
