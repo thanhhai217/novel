@@ -122,21 +122,27 @@
         }
 
         function fetchChapter() {
-            let select = document.getElementById("chapterSelect");
-            let selectedOption = select.options[select.selectedIndex];
+    let select = document.getElementById("chapterSelect");
+    let selectedOption = select.options[select.selectedIndex];
 
-            if (!selectedOption.value) {
-                alert("⚠️ Vui lòng chọn chương!");
-                return;
-            }
+    if (!selectedOption.value) {
+        alert("⚠️ Vui lòng chọn chương!");
+        return;
+    }
 
-            let title = selectedOption.getAttribute("data-title") || "Chưa có tiêu đề";
-            let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
-            let formattedContent = content.replace(/\n/g, "<br><br>");
+    let title = selectedOption.getAttribute("data-title") || "Chưa có tiêu đề";
+    let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
 
-            // ✅ Căn trái nội dung truyện
-            document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${formattedContent}</p>`;
-        }
+    // ✅ Xóa tiêu đề bị trùng ("# Chương X: ...")
+    content = content.replace(/^# Chương \d+: .*\n\n/, "");
+
+    // ✅ Chuyển ký tự xuống dòng `\n` thành `<br>` để hiển thị đúng
+    let formattedContent = content.replace(/\n/g, "<br><br>");
+
+    // ✅ Hiển thị nội dung đã được format
+    document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${formattedContent}</p>`;
+}
+
     </script>
 </body>
 </html>
