@@ -5,14 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chọn Chương</title>
     <style>
+        /* ✅ Fix giao diện mobile */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
             background-color: #ede3c0;
             color: #000;
             text-align: center;
-            padding: 20px;
+            padding: 10px;
         }
         .container {
+            max-width: 600px;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -24,7 +32,6 @@
             justify-content: center;
             gap: 10px;
             width: 100%;
-            max-width: 600px;
         }
         label {
             font-size: 16px;
@@ -32,7 +39,7 @@
         }
         select, button {
             width: 100%;
-            max-width: 600px;
+            max-width: 100%;
             padding: 10px;
             font-size: 16px;
             border-radius: 5px;
@@ -54,17 +61,34 @@
             font-weight: bold;
             color: green;
         }
-        /* ✅ FIX: Căn chỉnh nội dung truyện sang bên trái */
+        /* ✅ Bỏ nền trắng, fix mobile UI */
         #content {
-            text-align: left;  /* 🔥 CĂN TRÁI 🔥 */
+            text-align: left;
             width: 100%;
-            max-width: 800px;
-            margin: 20px auto;
+            max-width: 600px;
+            margin: 10px auto;
             font-size: 16px;
             line-height: 1.6;
-            padding: 20px;
-            background: #f9f5e8;
+            padding: 10px;
+            background: transparent; /* 🔥 BỎ NỀN TRẮNG 🔥 */
             border-radius: 5px;
+        }
+        /* ✅ Responsive: Fix cho màn hình nhỏ */
+        @media (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+            .container {
+                width: 100%;
+            }
+            #content {
+                padding: 5px;
+                font-size: 14px;
+            }
+            button, select {
+                font-size: 14px;
+                padding: 8px;
+            }
         }
     </style>
 </head>
@@ -72,7 +96,7 @@
     <h2>📚 Chọn Chương</h2>
     <div class="container">
         <button onclick="fetchChapters()">🔄 Cập Nhật Danh Sách Chương</button>
-        <div id="message"></div>  <!-- ✅ THÔNG BÁO SẼ HIỂN THỊ Ở ĐÂY -->
+        <div id="message"></div>  
         
         <div class="select-container">
             <label for="chapterSelect">📖 Chọn chương:</label>
@@ -84,7 +108,7 @@
         <button onclick="fetchChapter()">📖 Xem Chương</button>
     </div>
 
-    <div id="content"></div>  <!-- ✅ Căn trái nội dung truyện -->
+    <div id="content"></div>  <!-- ✅ Nội dung không có nền trắng -->
 
     <script>
         async function fetchChapters() {
