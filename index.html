@@ -3,80 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đọc Truyện</title>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Chọn Chương</title>
     <style>
-    body {
-        font-family: 'Be Vietnam Pro', sans-serif;
-        max-width: 850px;
-        margin: 20px auto;
-        padding: 20px;
-        background-color: #ede3c0; /* 🎨 Nền vàng nhạt */
-        color: #000; /* 🔤 Font chữ đen */
-    }
-    h2 {
-        text-align: center;
-        color: #000;
-        font-weight: 700;
-        font-size: 24px;
-        margin-bottom: 10px;
-    }
-    select, button {
-        width: 100%;
-        padding: 10px;
-        margin-top: 10px;
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-family: 'Be Vietnam Pro', sans-serif;
-    }
-    button {
-        background-color: #007bff;
-        color: white;
-        cursor: pointer;
-        transition: 0.3s;
-        font-weight: 500;
-        border: none;
-    }
-    button:hover {
-        background-color: #0056b3;
-    }
-    #content {
-        margin-top: 20px;
-        font-size: 16px; /* 🔤 Font size nhỏ hơn */
-        line-height: 1.6; /* 📏 Khoảng cách dòng hợp lý hơn */
-        text-align: left;
-        white-space: pre-line;
-        background: none; /* ❌ Bỏ nền trắng */
-        padding: 0; /* ❌ Bỏ padding */
-    }
-    h3 {
-        font-size: 20px;
-        font-weight: bold;
-        color: #000;
-        text-align: center;
-        margin-bottom: 15px;
-    }
-    p {
-        margin-bottom: 12px; /* 🆕 Tạo khoảng cách nhẹ giữa các đoạn */
-    }
-</style>
-
-
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #ede3c0;
+            color: #000;
+            text-align: center;
+            padding: 20px;
+        }
+        select, button {
+            width: 80%;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            border: none;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h2>📖 Đọc Truyện Online</h2>
-    
+    <h2>📚 Chọn Chương</h2>
     <button onclick="fetchChapters()">🔄 Cập Nhật Danh Sách Chương</button>
-
-    <label for="chapterSelect">📚 Chọn chương:</label>
+    <label for="chapterSelect">📖 Chọn chương:</label>
     <select id="chapterSelect">
         <option value="">Chưa có danh sách...</option>
     </select>
-
     <button onclick="fetchChapter()">📖 Xem Chương</button>
-
-    <div id="content">🔹 Nội dung chương sẽ hiển thị ở đây...</div>
+    <div id="content"></div>
 
     <script>
         async function fetchChapters() {
@@ -93,27 +57,48 @@
                 let select = document.getElementById("chapterSelect");
                 select.innerHTML = ""; // Xóa danh sách cũ
 
+                let groupedChapters = {};
+
+                // ✅ Nhóm các chương theo từng bộ truyện
                 data.data.forEach(item => {
                     let chapter = item.json;
-                    if (!chapter || !chapter.chapter_no || !chapter.title) {
+                    if (!chapter || !chapter.chapter_no || !chapter.title || !chapter.url_story) {
                         console.warn("⚠️ Bỏ qua chương có dữ liệu không hợp lệ:", chapter);
                         return;
                     }
 
-                    let storyName = "Không rõ";
-                    if (chapter.url_story) {
-                        storyName = chapter.url_story.split('/').pop();
+                    let storyName = chapter.url_story.split('/').pop(); // Lấy tên bộ truyện từ URL
+                    if (!groupedChapters[storyName]) {
+                        groupedChapters[storyName] = [];
                     }
-
-                    let option = document.createElement("option");
-                    option.value = chapter.chapter_no;
-                    option.setAttribute("data-content", chapter.content);
-                    option.setAttribute("data-title", chapter.title);
-                    option.textContent = `📖 Chương ${chapter.chapter_no}: ${chapter.title} (${storyName})`;
-                    select.appendChild(option);
+                    groupedChapters[storyName].push(chapter);
                 });
 
-                alert("✅ Danh sách chương đã cập nhật!");
+                // ✅ Duyệt qua từng bộ truyện và sắp xếp chương theo thứ tự tăng dần
+                Object.keys(groupedChapters).forEach(storyName => {
+                    groupedChapters[storyName].sort((a, b) => {
+                        let chapA = parseInt(a.chapter_no, 10) || 0;
+                        let chapB = parseInt(b.chapter_no, 10) || 0;
+                        return chapA - chapB;
+                    });
+
+                    // ✅ Thêm `<optgroup>` cho từng bộ truyện
+                    let optgroup = document.createElement("optgroup");
+                    optgroup.label = `📖 ${storyName}`;
+                    select.appendChild(optgroup);
+
+                    // ✅ Thêm các chương đã sắp xếp vào dropdown
+                    groupedChapters[storyName].forEach(chapter => {
+                        let option = document.createElement("option");
+                        option.value = chapter.chapter_no;
+                        option.setAttribute("data-content", chapter.content);
+                        option.setAttribute("data-title", chapter.title);
+                        option.textContent = `Chương ${chapter.chapter_no}: ${chapter.title}`;
+                        optgroup.appendChild(option);
+                    });
+                });
+
+                alert("✅ Danh sách chương đã cập nhật, được nhóm theo truyện và sắp xếp!");
             } catch (error) {
                 console.error("❌ Lỗi API:", error);
                 alert("⚠️ Không thể lấy danh sách chương!");
@@ -121,28 +106,20 @@
         }
 
         function fetchChapter() {
-    let select = document.getElementById("chapterSelect");
-    let selectedOption = select.options[select.selectedIndex];
+            let select = document.getElementById("chapterSelect");
+            let selectedOption = select.options[select.selectedIndex];
 
-    if (!selectedOption.value) {
-        alert("⚠️ Vui lòng chọn chương!");
-        return;
-    }
+            if (!selectedOption.value) {
+                alert("⚠️ Vui lòng chọn chương!");
+                return;
+            }
 
-    let title = selectedOption.getAttribute("data-title") || "Chưa có tiêu đề";
-    let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
+            let title = selectedOption.getAttribute("data-title") || "Chưa có tiêu đề";
+            let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
+            let formattedContent = content.replace(/\n/g, "<br>");
 
-    // ✅ Xóa tiêu đề bị trùng ("# Chương X: ...")
-    content = content.replace(/^# Chương \d+: .*\n\n/, "");
-
-    // ✅ Chuyển `\n` thành `<br>` nhưng chỉ dùng 1 thẻ xuống dòng
-    let formattedContent = content.replace(/\n/g, "<br>");
-
-    // ✅ Hiển thị nội dung đã được format
-    document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${formattedContent}</p>`;
-}
-
-
+            document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${formattedContent}</p>`;
+        }
     </script>
 </body>
 </html>
