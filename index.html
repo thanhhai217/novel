@@ -54,6 +54,18 @@
             font-weight: bold;
             color: green;
         }
+        /* ✅ FIX: Căn chỉnh nội dung truyện sang bên trái */
+        #content {
+            text-align: left;  /* 🔥 CĂN TRÁI 🔥 */
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            font-size: 16px;
+            line-height: 1.6;
+            padding: 20px;
+            background: #f9f5e8;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -72,7 +84,7 @@
         <button onclick="fetchChapter()">📖 Xem Chương</button>
     </div>
 
-    <div id="content"></div>
+    <div id="content"></div>  <!-- ✅ Căn trái nội dung truyện -->
 
     <script>
         async function fetchChapters() {
@@ -126,7 +138,6 @@
                     });
                 });
 
-                // ✅ CẬP NHẬT THÔNG BÁO NGAY DƯỚI BUTTON
                 document.getElementById("message").innerHTML = "✅ Danh sách chương đã cập nhật, được nhóm theo truyện và sắp xếp!";
                 document.getElementById("message").style.color = "green";
 
