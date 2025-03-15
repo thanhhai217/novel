@@ -6,37 +6,66 @@
     <title>Đọc Truyện</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            max-width: 700px;
             margin: 20px auto;
-            padding: 10px;
+            padding: 20px;
+            background-color: #faf3e0; /* Nền màu kem dịu mắt */
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            color: #444;
         }
         select, button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 10px;
             font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
         #content {
             margin-top: 20px;
-            padding: 15px;
+            padding: 20px;
             border: 1px solid #ddd;
-            background-color: #f9f9f9;
-            white-space: pre-line; /* Giữ định dạng xuống dòng */
+            background-color: #fff;
+            border-radius: 8px;
+            font-size: 18px;
+            line-height: 1.8;
+            text-align: justify;
+            white-space: pre-line;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h3 {
+            font-size: 22px;
+            font-weight: bold;
+            color: #222;
+            text-align: center;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
-    <h2>Đọc Truyện</h2>
+    <h2>📖 Đọc Truyện Online</h2>
     
-    <button onclick="fetchChapters()">📖 Lấy Danh Sách Truyện</button>
+    <button onclick="fetchChapters()">🔄 Cập Nhật Danh Sách Chương</button>
 
-    <label for="chapterSelect">Chọn chương:</label>
+    <label for="chapterSelect">📚 Chọn chương:</label>
     <select id="chapterSelect">
         <option value="">Chưa có danh sách...</option>
     </select>
 
-    <button onclick="fetchChapter()">📚 Xem Truyện</button>
+    <button onclick="fetchChapter()">📖 Xem Chương</button>
 
     <div id="content">🔹 Nội dung chương sẽ hiển thị ở đây...</div>
 
@@ -63,20 +92,20 @@
                         return;
                     }
 
-                    let storyName = "Không rõ"; // Nếu `url_story` không tồn tại
+                    let storyName = "Không rõ";
                     if (chapter.url_story) {
                         storyName = chapter.url_story.split('/').pop();
                     }
 
                     let option = document.createElement("option");
-                    option.value = chapter.chapter_no; // Chỉ lưu số chương
-                    option.setAttribute("data-content", chapter.content); // Lưu nội dung chương
-                    option.setAttribute("data-title", chapter.title); // Lưu tiêu đề chương
-                    option.textContent = `${chapter.title} - ${storyName}`;
+                    option.value = chapter.chapter_no;
+                    option.setAttribute("data-content", chapter.content);
+                    option.setAttribute("data-title", chapter.title);
+                    option.textContent = `📖 Chương ${chapter.chapter_no}: ${chapter.title} (${storyName})`;
                     select.appendChild(option);
                 });
 
-                alert("🎉 Danh sách truyện đã cập nhật!");
+                alert("✅ Danh sách chương đã cập nhật!");
             } catch (error) {
                 console.error("❌ Lỗi API:", error);
                 alert("⚠️ Không thể lấy danh sách chương!");
