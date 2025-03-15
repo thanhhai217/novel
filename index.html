@@ -12,10 +12,28 @@
             text-align: center;
             padding: 20px;
         }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .select-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+        label {
+            font-size: 16px;
+            font-weight: bold;
+        }
         select, button {
-            width: 80%;
+            width: 100%;
+            max-width: 600px;
             padding: 10px;
-            margin-top: 10px;
             font-size: 16px;
             border-radius: 5px;
             border: 1px solid #ccc;
@@ -34,12 +52,19 @@
 </head>
 <body>
     <h2>📚 Chọn Chương</h2>
-    <button onclick="fetchChapters()">🔄 Cập Nhật Danh Sách Chương</button>
-    <label for="chapterSelect">📖 Chọn chương:</label>
-    <select id="chapterSelect">
-        <option value="">Chưa có danh sách...</option>
-    </select>
-    <button onclick="fetchChapter()">📖 Xem Chương</button>
+    <div class="container">
+        <button onclick="fetchChapters()">🔄 Cập Nhật Danh Sách Chương</button>
+        
+        <div class="select-container">
+            <label for="chapterSelect">📖 Chọn chương:</label>
+            <select id="chapterSelect">
+                <option value="">Chưa có danh sách...</option>
+            </select>
+        </div>
+
+        <button onclick="fetchChapter()">📖 Xem Chương</button>
+    </div>
+
     <div id="content"></div>
 
     <script>
@@ -55,11 +80,10 @@
                 }
 
                 let select = document.getElementById("chapterSelect");
-                select.innerHTML = ""; // Xóa danh sách cũ
+                select.innerHTML = "";
 
                 let groupedChapters = {};
 
-                // ✅ Nhóm các chương theo từng bộ truyện
                 data.data.forEach(item => {
                     let chapter = item.json;
                     if (!chapter || !chapter.chapter_no || !chapter.title || !chapter.url_story) {
@@ -67,14 +91,13 @@
                         return;
                     }
 
-                    let storyName = chapter.url_story.split('/').pop(); // Lấy tên bộ truyện từ URL
+                    let storyName = chapter.url_story.split('/').pop();
                     if (!groupedChapters[storyName]) {
                         groupedChapters[storyName] = [];
                     }
                     groupedChapters[storyName].push(chapter);
                 });
 
-                // ✅ Duyệt qua từng bộ truyện và sắp xếp chương theo thứ tự tăng dần
                 Object.keys(groupedChapters).forEach(storyName => {
                     groupedChapters[storyName].sort((a, b) => {
                         let chapA = parseInt(a.chapter_no, 10) || 0;
@@ -82,12 +105,10 @@
                         return chapA - chapB;
                     });
 
-                    // ✅ Thêm `<optgroup>` cho từng bộ truyện
                     let optgroup = document.createElement("optgroup");
                     optgroup.label = `📖 ${storyName}`;
                     select.appendChild(optgroup);
 
-                    // ✅ Thêm các chương đã sắp xếp vào dropdown
                     groupedChapters[storyName].forEach(chapter => {
                         let option = document.createElement("option");
                         option.value = chapter.chapter_no;
