@@ -5,153 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chọn Chương</title>
     <style>
-        /* ✅ Fix giao diện mobile */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background-color: #ede3c0;
-            color: #000;
-            text-align: center;
-            padding: 10px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        .select-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-        }
-        label {
-            font-size: 16px;
-            font-weight: bold;
-        }
-        select, button {
-            width: 100%;
-            max-width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            font-weight: 500;
-            border: none;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #message {
-            margin-top: 10px;
-            font-size: 14px;
-            font-weight: bold;
-            color: green;
-        }
-        /* ✅ Bỏ nền trắng, fix mobile UI */
-        #content {
-            text-align: left;
-            width: 100%;
-            max-width: 600px;
-            margin: 10px auto;
-            font-size: 16px;
-            line-height: 1.6;
-            padding: 10px;
-            background: transparent; /* 🔥 BỎ NỀN TRẮNG 🔥 */
-            border-radius: 5px;
-        }
-        /* ✅ Responsive: Fix cho màn hình nhỏ */
-        @media (max-width: 600px) {
-            body {
-                padding: 5px;
-            }
-            .container {
-                width: 100%;
-            }
-            #content {
-                padding: 5px;
-                font-size: 14px;
-            }
-            button, select {
-                font-size: 14px;
-                padding: 8px;
-            }
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #ede3c0; text-align: center; padding: 10px; }
+        .container { max-width: 600px; margin: auto; display: flex; flex-direction: column; gap: 10px; }
+        select, button { width: 100%; padding: 10px; font-size: 16px; border-radius: 5px; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #message { margin-top: 10px; font-size: 14px; font-weight: bold; }
+        #content { text-align: left; max-width: 600px; margin: 10px auto; font-size: 16px; }
     </style>
 </head>
 <body>
     <h2>📚 Chọn Chương</h2>
     <div class="container">
-        <button onclick="fetchChapters()">🔄 Cập Nhật Danh Sách Chương</button>
-        <div id="message"></div>  
-        
+        <div id="message">🔄 Đang tải danh sách chương...</div>
         <div class="select-container">
             <label for="chapterSelect">📖 Chọn chương:</label>
             <select id="chapterSelect">
                 <option value="">Chưa có danh sách...</option>
             </select>
         </div>
-
         <button onclick="fetchChapter()">📖 Xem Chương</button>
     </div>
-
-    <div id="content"></div>  <!-- ✅ Nội dung không có nền trắng -->
+    <div id="content"></div>
 
     <script>
         async function fetchChapters() {
             try {
                 let response = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
                 let data = await response.json();
-
-                console.log("📌 Dữ liệu API:", data);
-
-                if (!Array.isArray(data.data)) {
-                    throw new Error("Dữ liệu không đúng định dạng!");
-                }
-
+                if (!Array.isArray(data.data)) throw new Error("Dữ liệu không đúng định dạng!");
                 let select = document.getElementById("chapterSelect");
                 select.innerHTML = "";
-
                 let groupedChapters = {};
-
                 data.data.forEach(item => {
                     let chapter = item.json;
-                    if (!chapter || !chapter.chapter_no || !chapter.title || !chapter.url_story) {
-                        console.warn("⚠️ Bỏ qua chương có dữ liệu không hợp lệ:", chapter);
-                        return;
-                    }
-
+                    if (!chapter || !chapter.chapter_no || !chapter.title || !chapter.url_story) return;
                     let storyName = chapter.url_story.split('/').pop();
-                    if (!groupedChapters[storyName]) {
-                        groupedChapters[storyName] = [];
-                    }
+                    if (!groupedChapters[storyName]) groupedChapters[storyName] = [];
                     groupedChapters[storyName].push(chapter);
                 });
-
                 Object.keys(groupedChapters).forEach(storyName => {
-                    groupedChapters[storyName].sort((a, b) => {
-                        let chapA = parseInt(a.chapter_no, 10) || 0;
-                        let chapB = parseInt(b.chapter_no, 10) || 0;
-                        return chapA - chapB;
-                    });
-
+                    groupedChapters[storyName].sort((a, b) => parseInt(a.chapter_no) - parseInt(b.chapter_no));
                     let optgroup = document.createElement("optgroup");
                     optgroup.label = `📖 ${storyName}`;
                     select.appendChild(optgroup);
-
                     groupedChapters[storyName].forEach(chapter => {
                         let option = document.createElement("option");
                         option.value = chapter.chapter_no;
@@ -161,32 +59,21 @@
                         optgroup.appendChild(option);
                     });
                 });
-
-                document.getElementById("message").innerHTML = "✅ Danh sách chương đã cập nhật, được nhóm theo truyện và sắp xếp!";
-                document.getElementById("message").style.color = "green";
-
+                document.getElementById("message").innerText = "✅ Danh sách chương đã cập nhật!";
             } catch (error) {
                 console.error("❌ Lỗi API:", error);
-                document.getElementById("message").innerHTML = "⚠️ Không thể lấy danh sách chương!";
-                document.getElementById("message").style.color = "red";
+                document.getElementById("message").innerText = "⚠️ Không thể lấy danh sách chương!";
             }
         }
-
         function fetchChapter() {
             let select = document.getElementById("chapterSelect");
             let selectedOption = select.options[select.selectedIndex];
-
-            if (!selectedOption.value) {
-                alert("⚠️ Vui lòng chọn chương!");
-                return;
-            }
-
+            if (!selectedOption.value) { alert("⚠️ Vui lòng chọn chương!"); return; }
             let title = selectedOption.getAttribute("data-title") || "Chưa có tiêu đề";
             let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
-            let formattedContent = content.replace(/\n/g, "<br>");
-
-            document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${formattedContent}</p>`;
+            document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${content.replace(/\n/g, "<br>")}</p>`;
         }
+        document.addEventListener("DOMContentLoaded", fetchChapters);
     </script>
 </body>
 </html>
