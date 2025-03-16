@@ -118,7 +118,8 @@
 
                     let storyName = new URL(chapter.chapter_url).pathname.split('/')[2];
 
-                    if (!groupedChapters[storyName]) groupedChapters[storyName] = [];
+ => {
+                        let option = document.createElement("option");                    if (!groupedChapters[storyName]) groupedChapters[storyName] = [];
                     groupedChapters[storyName].push(chapter);
                 });
 
@@ -128,8 +129,7 @@
                     optgroup.label = `📖 ${storyName}`;
                     select.appendChild(optgroup);
 
-                    groupedChapters[storyName].forEach(chapter => {
-                        let option = document.createElement("option");
+                    groupedChapters[storyName].forEach(chapter
                         option.value = chapter.chapter_no;
                         option.setAttribute("data-content", chapter.translated_content || "Không có nội dung!");
                         option.setAttribute("data-title", chapter.title);
