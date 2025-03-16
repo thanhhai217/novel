@@ -3,77 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chọn Chương</title>
+    <title>Danh Sách Chương</title>
+    
+    <!-- CSS Giữ Nguyên Giao Diện -->
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #ede3c0; text-align: center; padding: 10px; }
-        .container { max-width: 600px; margin: auto; display: flex; flex-direction: column; gap: 10px; }
-        select, button { width: 100%; padding: 10px; font-size: 16px; border-radius: 5px; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        #message { margin-top: 10px; font-size: 14px; font-weight: bold; }
-        #content { text-align: left; max-width: 600px; margin: 10px auto; font-size: 16px; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        li {
+            background: white;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #error-message {
+            text-align: center;
+            font-weight: bold;
+            color: red;
+        }
     </style>
-</head>
-<body>
-    <h2>📚 Chọn Chương</h2>
-    <div class="container">
-        <div id="message">🔄 Đang tải danh sách chương...</div>
-        <div class="select-container">
-            <label for="chapterSelect">📖 Chọn chương:</label>
-            <select id="chapterSelect">
-                <option value="">Chưa có danh sách...</option>
-            </select>
-        </div>
-        <button onclick="fetchChapter()">📖 Xem Chương</button>
-    </div>
-    <div id="content"></div>
 
     <script>
-        async function fetchChapters() {
+        // Fetch danh sách chương khi trang tải xong
+        document.addEventListener("DOMContentLoaded", async function() {
             try {
-                let response = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
-                let data = await response.json();
-                if (!Array.isArray(data.data)) throw new Error("Dữ liệu không đúng định dạng!");
-                let select = document.getElementById("chapterSelect");
-                select.innerHTML = "";
-                let groupedChapters = {};
-                data.data.forEach(item => {
-                    let chapter = item.json;
-                    if (!chapter || !chapter.chapter_no || !chapter.title || !chapter.url_story) return;
-                    let storyName = chapter.url_story.split('/').pop();
-                    if (!groupedChapters[storyName]) groupedChapters[storyName] = [];
-                    groupedChapters[storyName].push(chapter);
-                });
-                Object.keys(groupedChapters).forEach(storyName => {
-                    groupedChapters[storyName].sort((a, b) => parseInt(a.chapter_no) - parseInt(b.chapter_no));
-                    let optgroup = document.createElement("optgroup");
-                    optgroup.label = `📖 ${storyName}`;
-                    select.appendChild(optgroup);
-                    groupedChapters[storyName].forEach(chapter => {
-                        let option = document.createElement("option");
-                        option.value = chapter.chapter_no;
-                        option.setAttribute("data-content", chapter.content);
-                        option.setAttribute("data-title", chapter.title);
-                        option.textContent = `Chương ${chapter.chapter_no}: ${chapter.title}`;
-                        optgroup.appendChild(option);
+                const response = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
+                const data = await response.json();
+                
+                if (data.status === "success" && data.data.length > 0) {
+                    const chapterList = document.getElementById("chapter-list");
+                    chapterList.innerHTML = ""; // Xóa nội dung cũ
+                    
+                    data.data.forEach(item => {
+                        const chapter = item.json;
+                        const chapterElement = document.createElement("li");
+                        chapterElement.innerHTML = `<a href="${chapter.chapter_url}" target="_blank">${chapter.title}</a>`;
+                        chapterList.appendChild(chapterElement);
                     });
-                });
-                document.getElementById("message").innerText = "✅ Danh sách chương đã cập nhật!";
+                } else {
+                    document.getElementById("error-message").textContent = "Không có dữ liệu chương!";
+                }
             } catch (error) {
-                console.error("❌ Lỗi API:", error);
-                document.getElementById("message").innerText = "⚠️ Không thể lấy danh sách chương!";
+                document.getElementById("error-message").textContent = "Lỗi khi tải danh sách chương!";
+                console.error("Lỗi tải dữ liệu:", error);
             }
-        }
-        function fetchChapter() {
-            let select = document.getElementById("chapterSelect");
-            let selectedOption = select.options[select.selectedIndex];
-            if (!selectedOption.value) { alert("⚠️ Vui lòng chọn chương!"); return; }
-            let title = selectedOption.getAttribute("data-title") || "Chưa có tiêu đề";
-            let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
-            document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${content.replace(/\n/g, "<br>")}</p>`;
-        }
-        document.addEventListener("DOMContentLoaded", fetchChapters);
+        });
     </script>
+</head>
+<body>
+    <h1>Danh Sách Chương</h1>
+    <ul id="chapter-list">
+        <li>Đang tải danh sách chương...</li>
+    </ul>
+    <p id="error-message"></p>
 </body>
 </html>
