@@ -53,9 +53,10 @@
             max-width: 600px; 
             margin: 10px auto; 
             font-size: 16px; 
+            line-height: 1.6; /* ✅ Tăng khoảng cách dòng */
         }
         .nav-buttons {
-            display: flex;
+            display: none; /* ❌ Ẩn ban đầu */
             justify-content: space-between;
             margin-top: 20px;
         }
@@ -79,7 +80,7 @@
     <div id="content"></div>
 
     <!-- Thêm 2 nút Chương Trước - Chương Sau -->
-    <div class="nav-buttons">
+    <div class="nav-buttons" id="navButtons">
         <button id="prevChapter">⬅️ Chương Trước</button>
         <button id="nextChapter">Chương Sau ➡️</button>
     </div>
@@ -152,6 +153,9 @@
 
             // Cập nhật vị trí chương hiện tại
             currentChapterIndex = chapterList.findIndex(chap => chap.chapter_no == selectedOption.value);
+
+            // ✅ Hiển thị nút Chương Trước - Chương Sau
+            document.getElementById("navButtons").style.display = "flex";
         }
 
         function goToChapter(offset) {
