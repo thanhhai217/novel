@@ -4,15 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chọn Chương</title>
+    
+    <!-- Link Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700&display=swap" rel="stylesheet">
+
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #ede3c0; text-align: center; padding: 10px; }
-        .container { max-width: 600px; margin: auto; display: flex; flex-direction: column; gap: 10px; }
-        select, button { width: 100%; padding: 10px; font-size: 16px; border-radius: 5px; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        #message { margin-top: 10px; font-size: 14px; font-weight: bold; }
-        #content { text-align: left; max-width: 600px; margin: 10px auto; font-size: 16px; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
+        body { 
+            font-family: 'Be Vietnam Pro', sans-serif; 
+            background-color: #ede3c0; 
+            text-align: center; 
+            padding: 10px; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+        }
+        select, button { 
+            width: 100%; 
+            padding: 10px; 
+            font-size: 16px; 
+            border-radius: 5px; 
+        }
+        button { 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        button:hover { 
+            background-color: #0056b3; 
+        }
+        #message { 
+            margin-top: 10px; 
+            font-size: 14px; 
+            font-weight: bold; 
+        }
+        #content { 
+            text-align: left; 
+            max-width: 600px; 
+            margin: 10px auto; 
+            font-size: 16px; 
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .nav-buttons button {
+            width: 48%;
+        }
     </style>
 </head>
 <body>
@@ -29,8 +78,16 @@
     </div>
     <div id="content"></div>
 
+    <!-- Thêm 2 nút Chương Trước - Chương Sau -->
+    <div class="nav-buttons">
+        <button id="prevChapter">⬅️ Chương Trước</button>
+        <button id="nextChapter">Chương Sau ➡️</button>
+    </div>
+
     <script>
-        // Tự động lấy danh sách chương khi tải trang
+        let chapterList = []; // Lưu danh sách chương
+        let currentChapterIndex = -1; // Vị trí của chương hiện tại
+
         document.addEventListener("DOMContentLoaded", fetchChapters);
 
         async function fetchChapters() {
@@ -45,6 +102,7 @@
 
                 let select = document.getElementById("chapterSelect");
                 select.innerHTML = "";
+                chapterList = [];
 
                 let groupedChapters = {};
 
@@ -71,6 +129,7 @@
                         option.setAttribute("data-title", chapter.title);
                         option.textContent = `Chương ${chapter.chapter_no}: ${chapter.title}`;
                         optgroup.appendChild(option);
+                        chapterList.push(chapter); // Lưu vào danh sách chương
                     });
                 });
 
@@ -90,10 +149,38 @@
             let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
 
             document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${content.replace(/\n/g, "<br>")}</p>`;
+
+            // Cập nhật vị trí chương hiện tại
+            currentChapterIndex = chapterList.findIndex(chap => chap.chapter_no == selectedOption.value);
         }
 
-        // Gán sự kiện cho nút bấm
+        function goToChapter(offset) {
+            if (currentChapterIndex === -1) {
+                alert("⚠️ Bạn chưa chọn chương nào!");
+                return;
+            }
+
+            let newIndex = currentChapterIndex + offset;
+
+            if (newIndex < 0) {
+                alert("⚠️ Đây là chương đầu tiên!");
+                return;
+            }
+            if (newIndex >= chapterList.length) {
+                alert("⚠️ Đây là chương cuối cùng!");
+                return;
+            }
+
+            currentChapterIndex = newIndex;
+            let chapter = chapterList[currentChapterIndex];
+
+            document.getElementById("chapterSelect").value = chapter.chapter_no;
+            document.getElementById("content").innerHTML = `<h3>${chapter.title}</h3><p>${chapter.translated_content.replace(/\n/g, "<br>")}</p>`;
+        }
+
         document.getElementById("viewChapter").addEventListener("click", fetchChapter);
+        document.getElementById("prevChapter").addEventListener("click", () => goToChapter(-1));
+        document.getElementById("nextChapter").addEventListener("click", () => goToChapter(1));
     </script>
 </body>
 </html>
