@@ -55,13 +55,21 @@
             font-size: 16px; 
             line-height: 1.6; /* ✅ Tăng khoảng cách dòng */
         }
-        .nav-buttons {
+        .scroll-top-button {
             display: none; /* ❌ Ẩn ban đầu */
-            justify-content: space-between;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
             margin-top: 20px;
+            font-family: 'Be Vietnam Pro', sans-serif;
         }
-        .nav-buttons button {
-            width: 48%;
+        .scroll-top-button:hover {
+            background-color: #218838;
         }
     </style>
 </head>
@@ -79,11 +87,8 @@
     </div>
     <div id="content"></div>
 
-    <!-- Thêm 2 nút Chương Trước - Chương Sau -->
-    <div class="nav-buttons" id="navButtons">
-        <button id="prevChapter">⬅️ Chương Trước</button>
-        <button id="nextChapter">Chương Sau ➡️</button>
-    </div>
+    <!-- Nút Lên Đầu Trang -->
+    <button id="scrollTopButton" class="scroll-top-button">🔝 Lên đầu trang</button>
 
     <script>
         let chapterList = []; // Lưu danh sách chương
@@ -151,40 +156,17 @@
 
             document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${content.replace(/\n/g, "<br>")}</p>`;
 
-            // Cập nhật vị trí chương hiện tại
-            currentChapterIndex = chapterList.findIndex(chap => chap.chapter_no == selectedOption.value);
-
-            // ✅ Hiển thị nút Chương Trước - Chương Sau
-            document.getElementById("navButtons").style.display = "flex";
+            // ✅ Hiển thị nút Lên Đầu Trang
+            document.getElementById("scrollTopButton").style.display = "block";
         }
 
-        function goToChapter(offset) {
-            if (currentChapterIndex === -1) {
-                alert("⚠️ Bạn chưa chọn chương nào!");
-                return;
-            }
-
-            let newIndex = currentChapterIndex + offset;
-
-            if (newIndex < 0) {
-                alert("⚠️ Đây là chương đầu tiên!");
-                return;
-            }
-            if (newIndex >= chapterList.length) {
-                alert("⚠️ Đây là chương cuối cùng!");
-                return;
-            }
-
-            currentChapterIndex = newIndex;
-            let chapter = chapterList[currentChapterIndex];
-
-            document.getElementById("chapterSelect").value = chapter.chapter_no;
-            document.getElementById("content").innerHTML = `<h3>${chapter.title}</h3><p>${chapter.translated_content.replace(/\n/g, "<br>")}</p>`;
+        // ✅ Chức năng cuộn lên đầu trang
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         document.getElementById("viewChapter").addEventListener("click", fetchChapter);
-        document.getElementById("prevChapter").addEventListener("click", () => goToChapter(-1));
-        document.getElementById("nextChapter").addEventListener("click", () => goToChapter(1));
+        document.getElementById("scrollTopButton").addEventListener("click", scrollToTop);
     </script>
 </body>
 </html>
