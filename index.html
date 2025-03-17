@@ -35,6 +35,7 @@
 </head>
 <body>
     <h2>📚 Chọn Chương</h2>
+    <div id="readingStatus"></div>
     <div class="container">
         <div id="message">📖 Chọn chương bên dưới hoặc cập nhật danh sách.</div>
         <button id="updateList" onclick="fetchChapters(true)">🔄 Cập nhật danh sách chương</button>
@@ -45,7 +46,6 @@
             </select>
         </div>
         <button onclick="fetchChapter()">📖 Xem Chương</button>
-        <div id="readingStatus"></div>
     </div>
     <div id="content"></div>
         <button id="topButton" onclick="scrollToTop()">⬆️ Lên đầu trang</button>
