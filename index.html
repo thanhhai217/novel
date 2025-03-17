@@ -19,6 +19,18 @@
         #message { margin-top: 10px; font-size: 14px; font-weight: bold; }
         #content { text-align: left; max-width: 600px; margin: 10px auto; font-size: 16px; display: none; }
         #topButton { display: none; margin-top: 10px; }
+        #readingStatus { 
+            margin-top: 15px;
+            text-align: left;
+            font-size: 14px;
+            color: #666;
+        }
+        .status-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #007bff;
+            background-color: rgba(0,123,255,0.1);
+        }
     </style>
 </head>
 <body>
@@ -33,6 +45,7 @@
             </select>
         </div>
         <button onclick="fetchChapter()">📖 Xem Chương</button>
+        <div id="readingStatus"></div>
     </div>
     <div id="content"></div>
         <button id="topButton" onclick="scrollToTop()">⬆️ Lên đầu trang</button>
@@ -104,18 +117,49 @@
                 return; 
             }
 
+            let storyName = selectedOption.parentElement.label.replace("📖 ", "");
             let title = selectedOption.getAttribute("data-title") || "Chưa có tiêu đề";
             let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
+            let chapterNo = selectedOption.value;
 
             document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${content.replace(/\n/g, "<br>")}</p>`;
             document.getElementById("content").style.display = "block";
             document.getElementById("topButton").style.display = "block";
 
-            localStorage.setItem("lastChapter", JSON.stringify({
-                title: title,
-                content: content,
-                chapter_no: selectedOption.value
-            }));
+            // Lưu trạng thái đọc cho truyện hiện tại
+            saveReadingStatus(storyName, chapterNo, title);
+            updateReadingStatusDisplay();
+        }
+
+        function saveReadingStatus(storyName, chapterNo, chapterTitle) {
+            let readingStatus = JSON.parse(localStorage.getItem("readingStatus") || "{}");
+            readingStatus[storyName] = {
+                chapterNo: chapterNo,
+                chapterTitle: chapterTitle,
+                lastRead: new Date().toLocaleString()
+            };
+            localStorage.setItem("readingStatus", JSON.stringify(readingStatus));
+        }
+
+        function updateReadingStatusDisplay() {
+            let statusDiv = document.getElementById("readingStatus");
+            let readingStatus = JSON.parse(localStorage.getItem("readingStatus") || "{}");
+            
+            if (Object.keys(readingStatus).length === 0) {
+                statusDiv.innerHTML = "";
+                return;
+            }
+
+            let html = "<h3>📑 Trạng thái đọc:</h3>";
+            for (let [story, status] of Object.entries(readingStatus)) {
+                html += `
+                    <div class="status-item">
+                        📚 ${story}<br>
+                        ↪️ Đang đọc: Chương ${status.chapterNo} - ${status.chapterTitle}<br>
+                        🕒 Cập nhật: ${status.lastRead}
+                    </div>`;
+            }
+            statusDiv.innerHTML = html;
         }
 
         function scrollToTop() {
@@ -138,6 +182,9 @@
             } else {
                 fetchChapters();
             }
+
+            // Hiển thị trạng thái đọc khi tải trang
+            updateReadingStatusDisplay();
         });
     </script>
 </body>
