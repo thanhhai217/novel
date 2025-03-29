@@ -3,187 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="apple-touch-icon" sizes="180x180" href="180.png">
     <link rel="manifest" href="/manifest.json">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Chọn Chương</title>
+    <title>Novel Reader</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #ede3c0; text-align: center; padding: 10px; line-height: 1.6; }
+        body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #ede3c0; padding: 20px; }
         .container { max-width: 600px; margin: auto; display: flex; flex-direction: column; gap: 10px; }
         select, button { width: 100%; padding: 10px; font-size: 16px; border-radius: 5px; }
         button { background-color: #007bff; color: white; border: none; cursor: pointer; }
         button:hover { background-color: #0056b3; }
-        #message { margin-top: 10px; font-size: 14px; font-weight: bold; }
-        #content { text-align: left; max-width: 600px; margin: 10px auto; font-size: 16px; display: none; }
-        #topButton { display: none; margin-top: 10px; margin-bottom: 30px; }
-        #readingStatus { 
-            margin-top: 15px;
-            text-align: left;
-            font-size: 14px;
-            color: #666;
-        }
-        .status-item {
-            margin: 5px 0;
-            padding: 5px;
-            border-left: 3px solid #007bff;
-            background-color: rgba(0,123,255,0.1);
-        }
+        #content { margin-top: 20px; font-size: 16px; line-height: 1.6; display: none; }
+        #topButton, #nextChapterButton { display: none; margin-top: 10px; }
+        #readingStatus { margin-top: 15px; font-size: 14px; color: #555; }
+        .status-item { margin-top: 10px; padding: 10px; background: #f0f8ff; border-left: 4px solid #007bff; }
     </style>
 </head>
 <body>
-    <h2>📚 Chọn Chương</h2>
-    <div id="readingStatus"></div>
     <div class="container">
-        <div id="message">📖 Chọn chương bên dưới hoặc cập nhật danh sách.</div>
-        <button id="updateList" onclick="fetchChapters(true)">🔄 Cập nhật danh sách chương</button>
-        <div class="select-container">
-            <label for="chapterSelect">📖 Chọn chương:</label>
-            <select id="chapterSelect">
-                <option value="">Chưa có danh sách...</option>
-            </select>
-        </div>
-        <button onclick="fetchChapter()">📖 Xem Chương</button>
+        <h2>📚 Novel Reader</h2>
+        <div id="readingStatus"></div>
+        <button onclick="fetchChapters(true)">🔄 Cập nhật danh sách chương</button>
+
+        <label for="novelSelect">📘 Chọn truyện:</label>
+        <select id="novelSelect" onchange="onNovelChange()">
+            <option value="">-- Chọn truyện --</option>
+        </select>
+
+        <label for="chapterSelect">📖 Chọn chương:</label>
+        <select id="chapterSelect">
+            <option value="">-- Chọn chương --</option>
+        </select>
+
+        <button onclick="fetchChapter()">📖 Xem chương</button>
+
+        <div id="content"></div>
+        <button id="nextChapterButton" onclick="goToNextChapter()">▶️ Tiếp tục chương kế tiếp</button>
+        <button id="topButton" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">⬆️ Lên đầu trang</button>
     </div>
-    <div id="content"></div>
-        <button id="topButton" onclick="scrollToTop()">⬆️ Lên đầu trang</button>
 
     <script>
-        async function fetchChapters(forceUpdate = false) {
-            let savedData = localStorage.getItem("chapterList");
+        let allChapters = [];
+        let currentNovel = "";
+        let currentChapterIndex = -1;
 
-            if (!forceUpdate && savedData) {
-                console.log("📌 Sử dụng danh sách chương từ bộ nhớ cache.");
-                populateChapters(JSON.parse(savedData));
+        async function fetchChapters(force = false) {
+            const cached = localStorage.getItem("chapterList");
+            if (!force && cached) {
+                allChapters = JSON.parse(cached);
+                populateNovelDropdown();
                 return;
             }
-
-            document.getElementById("message").innerText = "🔄 Đang tải danh sách chương...";
-
             try {
-                let response = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
-                let data = await response.json();
-
-                if (!Array.isArray(data.data)) throw new Error("Dữ liệu không đúng định dạng!");
-
-                localStorage.setItem("chapterList", JSON.stringify(data.data)); 
-                populateChapters(data.data);
-
-                document.getElementById("message").innerText = "✅ Danh sách chương đã cập nhật!";
-            } catch (error) {
-                console.error("❌ Lỗi API:", error);
-                document.getElementById("message").innerText = "⚠️ Không thể lấy danh sách chương!";
+                const res = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
+                const data = await res.json();
+                if (!Array.isArray(data.data)) throw new Error("Sai định dạng dữ liệu");
+                allChapters = data.data.map(d => d.json);
+                localStorage.setItem("chapterList", JSON.stringify(allChapters));
+                populateNovelDropdown();
+            } catch (err) {
+                alert("Không thể tải danh sách chương!");
             }
         }
 
-        function populateChapters(data) {
-            let select = document.getElementById("chapterSelect");
-            select.innerHTML = "";
-            let groupedChapters = {};
-
-            data.forEach(item => {
-                let chapter = item.json;
-                if (!chapter || !chapter.chapter_no || !chapter.title || !chapter.chapter_url) return;
-                let storyName = chapter.chapter_url.split('/').slice(-2, -1)[0];
-                if (!groupedChapters[storyName]) groupedChapters[storyName] = [];
-                groupedChapters[storyName].push(chapter);
+        function populateNovelDropdown() {
+            const novelSelect = document.getElementById("novelSelect");
+            const novels = [...new Set(allChapters.map(chap => chap.novel_name))];
+            novelSelect.innerHTML = '<option value="">-- Chọn truyện --</option>';
+            novels.forEach(name => {
+                const opt = document.createElement("option");
+                opt.value = name;
+                opt.textContent = name;
+                novelSelect.appendChild(opt);
             });
+        }
 
-            Object.keys(groupedChapters).forEach(storyName => {
-                groupedChapters[storyName].sort((a, b) => parseInt(a.chapter_no) - parseInt(b.chapter_no));
-                let optgroup = document.createElement("optgroup");
-                optgroup.label = `📖 ${storyName}`;
-                select.appendChild(optgroup);
+        function onNovelChange() {
+            const novelName = document.getElementById("novelSelect").value;
+            currentNovel = novelName;
+            const chapterSelect = document.getElementById("chapterSelect");
+            chapterSelect.innerHTML = '<option value="">-- Chọn chương --</option>';
 
-                groupedChapters[storyName].forEach(chapter => {
-                    let option = document.createElement("option");
-                    option.value = chapter.chapter_no;
-                    option.setAttribute("data-content", chapter.translated_content);
-                    option.setAttribute("data-title", chapter.title);
-                    option.textContent = `Chương ${chapter.chapter_no}: ${chapter.title}`;
-                    optgroup.appendChild(option);
-                });
+            const chapters = allChapters.filter(chap => chap.novel_name === novelName);
+            chapters.sort((a, b) => parseInt(a.chapter_no) - parseInt(b.chapter_no));
+
+            chapters.forEach((chap, index) => {
+                const opt = document.createElement("option");
+                opt.value = index;
+                opt.textContent = `Chương ${chap.chapter_no}: ${chap.title}`;
+                chapterSelect.appendChild(opt);
             });
         }
 
         function fetchChapter() {
-            let select = document.getElementById("chapterSelect");
-            let selectedOption = select.options[select.selectedIndex];
+            const index = document.getElementById("chapterSelect").value;
+            if (index === "") return alert("Vui lòng chọn chương!");
 
-            if (!selectedOption.value) { 
-                alert("⚠️ Vui lòng chọn chương!");
-                return; 
+            const novelChapters = allChapters.filter(chap => chap.novel_name === currentNovel);
+            const chapter = novelChapters[index];
+
+            currentChapterIndex = parseInt(index);
+            document.getElementById("content").innerHTML = `<h3>${chapter.title}</h3><p>${chapter.translated_content.replace(/\n/g, "<br>")}</p>`;
+            document.getElementById("content").style.display = "block";
+            document.getElementById("topButton").style.display = "inline-block";
+
+            if (index < novelChapters.length - 1) {
+                document.getElementById("nextChapterButton").style.display = "inline-block";
+            } else {
+                document.getElementById("nextChapterButton").style.display = "none";
             }
 
-            let storyName = selectedOption.parentElement.label.replace("📖 ", "");
-            let title = selectedOption.getAttribute("data-title") || "Chưa có tiêu đề";
-            let content = selectedOption.getAttribute("data-content") || "Không có nội dung!";
-            let chapterNo = selectedOption.value;
-
-            document.getElementById("content").innerHTML = `<h3>${title}</h3><p>${content.replace(/\n/g, "<br>")}</p>`;
-            document.getElementById("content").style.display = "block";
-            document.getElementById("topButton").style.display = "block";
-
-            // Lưu trạng thái đọc cho truyện hiện tại
-            saveReadingStatus(storyName, chapterNo, title);
+            saveReadingStatus(currentNovel, chapter.chapter_no, chapter.title);
             updateReadingStatusDisplay();
         }
 
+        function goToNextChapter() {
+            const chapterSelect = document.getElementById("chapterSelect");
+            chapterSelect.value = currentChapterIndex + 1;
+            fetchChapter();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function saveReadingStatus(storyName, chapterNo, chapterTitle) {
-            let readingStatus = JSON.parse(localStorage.getItem("readingStatus") || "{}");
+            const readingStatus = JSON.parse(localStorage.getItem("readingStatus") || "{}");
             readingStatus[storyName] = {
-                chapterNo: chapterNo,
-                chapterTitle: chapterTitle,
+                chapterNo,
+                chapterTitle,
                 lastRead: new Date().toLocaleString()
             };
             localStorage.setItem("readingStatus", JSON.stringify(readingStatus));
         }
 
         function updateReadingStatusDisplay() {
-            let statusDiv = document.getElementById("readingStatus");
-            let readingStatus = JSON.parse(localStorage.getItem("readingStatus") || "{}");
-            
-            if (Object.keys(readingStatus).length === 0) {
-                statusDiv.innerHTML = "";
-                return;
-            }
+            const div = document.getElementById("readingStatus");
+            const status = JSON.parse(localStorage.getItem("readingStatus") || "{}");
+            if (!Object.keys(status).length) return div.innerHTML = "";
 
             let html = "<h3>📑 Trạng thái đọc:</h3>";
-            for (let [story, status] of Object.entries(readingStatus)) {
-                html += `
-                    <div class="status-item">
-                        📚 ${story}<br>
-                        ↪️ Đang đọc: Chương ${status.chapterNo} - ${status.chapterTitle}<br>
-                        🕒 Cập nhật: ${status.lastRead}
-                    </div>`;
+            for (let [novel, info] of Object.entries(status)) {
+                html += `<div class="status-item">
+                    📘 ${novel}<br>
+                    ↪️ Chương ${info.chapterNo} - ${info.chapterTitle}<br>
+                    🕒 ${info.lastRead}
+                </div>`;
             }
-            statusDiv.innerHTML = html;
+            div.innerHTML = html;
         }
 
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            let savedChapter = localStorage.getItem("lastChapter");
-            if (savedChapter) {
-                savedChapter = JSON.parse(savedChapter);
-                document.getElementById("content").innerHTML = `<h3>${savedChapter.title}</h3><p>${savedChapter.content.replace(/\n/g, "<br>")}</p>`;
-                document.getElementById("content").style.display = "block";
-                document.getElementById("topButton").style.display = "block";
-            }
-
-            let savedList = localStorage.getItem("chapterList");
-            if (savedList) {
-                console.log("📌 Tải danh sách chương từ bộ nhớ cache.");
-                populateChapters(JSON.parse(savedList));
-            } else {
-                fetchChapters();
-            }
-
-            // Hiển thị trạng thái đọc khi tải trang
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchChapters();
             updateReadingStatusDisplay();
         });
     </script>
