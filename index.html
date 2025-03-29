@@ -47,18 +47,23 @@
         let currentChapterIndex = -1;
 
         async function fetchChapters(force = false) {
-            const cached = localStorage.getItem("chapterList");
-            if (!force && cached) {
-                allChapters = JSON.parse(cached);
-                populateNovelDropdown();
-                return;
+            if (!force) {
+                const cached = localStorage.getItem("chapterList");
+                if (cached) {
+                    allChapters = JSON.parse(cached);
+                    populateNovelDropdown();
+                    return;
+                }
             }
             try {
                 const res = await fetch("https://n8n.thanhhai217.com/webhook/get-chapter-list");
                 const data = await res.json();
                 if (!Array.isArray(data.data)) throw new Error("Sai định dạng dữ liệu");
+
+                // Lưu mới toàn bộ và clear cũ
                 allChapters = data.data.map(d => d.json);
                 localStorage.setItem("chapterList", JSON.stringify(allChapters));
+
                 populateNovelDropdown();
             } catch (err) {
                 alert("Không thể tải danh sách chương!");
